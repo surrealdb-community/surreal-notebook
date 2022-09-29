@@ -4,6 +4,7 @@
   "description": "Notebooks for SurrealQL",
   "version": "1.0.0",
   "icon": "surrealdb-icon.png",
+  "publisher": "mathe42",
   "engines": {
     "vscode": "^1.71.0"
   },
