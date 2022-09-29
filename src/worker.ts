@@ -36,5 +36,3 @@ export const api = {
 };
 
 expose(api, nodeEndpoint(parentPort!));
-
-console.log('exposed');

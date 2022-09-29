@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer('surreal.nb', new SQLSerializer())
   );
-	context.subscriptions.push(new SQLController());
+  context.subscriptions.push(new SQLController());
 }
 
 interface RawNotebookCell {
@@ -66,7 +66,7 @@ class SQLController {
   readonly notebookType = 'surreal.nb';
   readonly label = 'SurrealQL Notebook';
   readonly supportedLanguages = ['surrealql'];
-	private _executionOrder = 0;
+  private _executionOrder = 0;
 
   private readonly _controller: vscode.NotebookController;
 
@@ -87,34 +87,28 @@ class SQLController {
     notebook: vscode.NotebookDocument,
     _controller: vscode.NotebookController
   ) {
-		if(!instances.has(notebook)) {
-      console.log('new instance')
-			instances.set(notebook, new Instance())
-		}
+    if (!instances.has(notebook)) {
+      instances.set(notebook, new Instance())
+    }
 
     for (let cell of cells) {
-      console.log('cell')
-			await this._doExecution(cell);
+      await this._doExecution(cell);
     }
   }
 
-	private async _doExecution(cell: vscode.NotebookCell): Promise<void> {
+  private async _doExecution(cell: vscode.NotebookCell): Promise<void> {
     const execution = this._controller.createNotebookCellExecution(cell);
     execution.executionOrder = ++this._executionOrder;
     execution.start(Date.now()); // Keep track of elapsed time to execute cell.
 
     const instance = instances.get(cell.notebook)!;
 
-    console.log('execute')
+    const result = await instance.run(cell.document.getText());
 
-		const result = await instance.run(cell.document.getText());
-
-    console.log('execute done')
-
-    if(result.type === 'result') {
+    if (result.type === 'result') {
       let data = result.data.slice(1)
 
-      if(data.length === 1) data = data[0]
+      if (data.length === 1) data = data[0]
 
       execution.replaceOutput([
         new vscode.NotebookCellOutput([
@@ -123,7 +117,7 @@ class SQLController {
       ])
     }
 
-    if(result.type === 'error') {
+    if (result.type === 'error') {
       execution.replaceOutput([
         new vscode.NotebookCellOutput([
           vscode.NotebookCellOutputItem.error(result.err)
@@ -131,47 +125,37 @@ class SQLController {
       ])
     }
 
-    
+
     execution.end(true, Date.now());
   }
 
-	dispose() {
-		instances = new WeakMap();
-	}
+  dispose() {
+    instances = new WeakMap();
+  }
 }
 
 
 class Instance {
-	private _worker!: Worker;
-	private _api!: Remote<{runSql(sql: string): any}>;
+  private _worker!: Worker;
+  private _api!: Remote<{ runSql(sql: string): any }>;
 
-	constructor() {
-		this.init();
-	}
+  constructor() {
+    this.init();
+  }
 
   ready = sleep(2000)
 
-	init() {
-    console.log('worker in creation');
-		if(this._worker) {
-			this._worker.terminate();
-		}
-		this._worker = new Worker(join(__dirname, './worker'), {
-      workerData: __dirname
-    });
+  init() {
+    if (this._worker) {
+      this._worker.terminate();
+    }
+    this._worker = new Worker(join(__dirname, './worker'));
+    this._api = wrap(nodeEndpoint(this._worker));
+  }
 
-    this._worker.on('message', e => console.log('msg', e))
-    this._worker.on('exit', (e) => console.log('exit', e))
-    this._worker.on('messageerror', (e) => console.log(e, 'err'))
-    this._worker.on('error', (e) => console.log(e, 'err2'))
-    this._worker.on('online', () => console.log('online'))
-
-		this._api = wrap(nodeEndpoint(this._worker));
-	}
-
-	async run(sql: string): Promise<any> {
+  async run(sql: string): Promise<any> {
     await this.ready
 
     return this._api.runSql(sql)
-	}
+  }
 }
