@@ -1,6 +1,6 @@
 import { parentPort } from "worker_threads";
 import { expose } from "comlink";
-import nodeEndpoint from "./comlink/node-adapter";
+import nodeEndpoint from "./ep";
 
 // @ts-expect-error has no types
 import * as DB from "mathe42.surrealdb.wasm";

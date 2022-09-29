@@ -1,6 +1,6 @@
 # Surreal-Notebook 
 
-![Example notebook](./example.png)
+![Example notebook](https://github.com/mathe42/surreal-notebook/raw/main/example.png)
 
 ## This extiension add notebooks for SurrealQL!
 For each Notebook a new DB instance is created.

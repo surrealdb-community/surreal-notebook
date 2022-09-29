@@ -3,9 +3,11 @@ import { TextDecoder, TextEncoder } from 'util';
 import * as vscode from 'vscode';
 import { Worker } from "worker_threads";
 import { wrap, Remote } from "comlink";
-import nodeEndpoint from "./comlink/node-adapter";
+import nodeEndpoint from "./ep";
+// const nodeEndpoint = require('comlink/dist/esm/node-adapter.js')
 
 export function activate(context: vscode.ExtensionContext) {
+  console.log('ACTIVATE')
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer('surreal.nb', new SQLSerializer())
   );
@@ -23,6 +25,7 @@ class SQLSerializer implements vscode.NotebookSerializer {
     content: Uint8Array,
     _token: vscode.CancellationToken
   ): Promise<vscode.NotebookData> {
+    console.log('DESERIAL')
     var contents = new TextDecoder().decode(content);
 
     let raw: RawNotebookCell[];
