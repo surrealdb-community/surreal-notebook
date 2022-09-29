@@ -3,6 +3,7 @@
   "displayName": "surreal-notebook",
   "description": "Notebooks for SurrealQL",
   "version": "0.0.1",
+  "icon": "./surrealdb-icon.png",
   "engines": {
     "vscode": "^1.71.0"
   },
