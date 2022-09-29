@@ -1,0 +1,55 @@
+{
+  "name": "surreal-notebook",
+  "displayName": "surreal-notebook",
+  "description": "",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.71.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onNotebook:surreal.nb"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "notebooks": [
+      {
+        "id": "surreal.nb",
+        "type": "surreal.nb",
+        "displayName": "SurrealQL Notebook",
+        "selector": [
+          {
+            "filenamePattern": "*.srqlnb"
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "14.x",
+    "@types/vscode": "^1.71.0",
+    "@typescript-eslint/eslint-plugin": "^5.21.0",
+    "@typescript-eslint/parser": "^5.21.0",
+    "@vscode/test-electron": "^2.1.3",
+    "eslint": "^8.14.0",
+    "glob": "^8.0.1",
+    "mocha": "^9.2.2",
+    "typescript": "^4.6.4"
+  },
+  "dependencies": {
+    "comlink": "^4.3.1",
+    "mathe42.surrealdb.wasm": "^0.0.1",
+    "surrealdb.wasm": "^0.1.0"
+  }
+}
