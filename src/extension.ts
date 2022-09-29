@@ -4,7 +4,6 @@ import * as vscode from 'vscode';
 import { Worker } from "worker_threads";
 import { wrap, Remote } from "comlink";
 import nodeEndpoint from "./ep";
-// const nodeEndpoint = require('comlink/dist/esm/node-adapter.js')
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -59,8 +58,6 @@ class SQLSerializer implements vscode.NotebookSerializer {
 }
 
 let instances = new WeakMap<vscode.NotebookDocument, Instance>();
-
-const sleep = (ms: number) => new Promise((res) => setTimeout(res, ms))
 
 class SQLController {
   readonly controllerId = 'surreal.nb.controller';
@@ -144,8 +141,6 @@ class Instance {
     this.init();
   }
 
-  ready = sleep(2000)
-
   init() {
     if (this._worker) {
       this._worker.terminate();
@@ -155,8 +150,6 @@ class Instance {
   }
 
   async run(sql: string): Promise<any> {
-    await this.ready
-
     return this._api.runSql(sql)
   }
 }
