@@ -25,35 +25,53 @@ class SQLSerializer implements vscode.NotebookSerializer {
   ): Promise<vscode.NotebookData> {
     var contents = new TextDecoder().decode(content);
 
-    let raw: RawNotebookCell[];
     try {
-      raw = <RawNotebookCell[]>JSON.parse(contents);
+      const data = JSON.parse(contents);
+
+      let raw: RawNotebookCell[]
+      let meta: any = {}
+
+      if (Array.isArray(data)) {
+        raw = data
+      } else {
+        const version = data.version
+
+        if (version == 1) {
+          raw = data.cells
+          meta = data.meta
+        } else {
+          throw new Error("File is in wrong version");
+        }
+      }
+
+      const cells = raw.map(
+        item => new vscode.NotebookCellData(item.kind, item.value, item.language)
+      );
+
+      const nb = new vscode.NotebookData(cells)
+      nb.metadata = meta
+
+      return nb
     } catch {
-      raw = [];
+      return new vscode.NotebookData([])
     }
-
-    const cells = raw.map(
-      item => new vscode.NotebookCellData(item.kind, item.value, item.language)
-    );
-
-    return new vscode.NotebookData(cells);
   }
 
   async serializeNotebook(
     data: vscode.NotebookData,
     _token: vscode.CancellationToken
   ): Promise<Uint8Array> {
-    let contents: RawNotebookCell[] = [];
+    let cells: RawNotebookCell[] = [];
 
     for (const cell of data.cells) {
-      contents.push({
+      cells.push({
         kind: cell.kind,
         language: cell.languageId,
         value: cell.value
       });
     }
 
-    return new TextEncoder().encode(JSON.stringify(contents));
+    return new TextEncoder().encode(JSON.stringify({ cells, version: 1, meta: data.metadata }));
   }
 }
 
