@@ -1,17 +1,30 @@
 {
   "name": "surreal-notebook",
   "displayName": "surreal-notebook",
-  "description": "",
+  "description": "Notebooks for SurrealQL",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.71.0"
   },
   "categories": [
-    "Other"
+    "Notebooks"
   ],
   "activationEvents": [
     "onNotebook:surreal.nb"
   ],
+  "author": {
+    "name": "mathe42",
+    "email": "2pi_r2@gmx.de",
+    "url": "https://github.com/mathe42"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mathe42/suurreal-notebook"
+  },
+  "homepage": "https://github.com/mathe42/suurreal-notebook#readme",
+  "bugs": {
+    "url": "https://github.com/mathe42/suurreal-notebook/issues"
+  },
   "main": "./out/extension.js",
   "contributes": {
     "notebooks": [
