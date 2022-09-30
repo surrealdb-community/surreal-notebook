@@ -6,6 +6,7 @@ import { wrap, Remote } from "comlink";
 import nodeEndpoint from "./ep";
 
 export function activate(context: vscode.ExtensionContext) {
+  console.log(vscode.workspace.getConfiguration())
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer('surreal.nb', new SQLSerializer())
   );
@@ -90,39 +91,51 @@ class SQLController {
     }
 
     for (let cell of cells) {
-      await this._doExecution(cell);
+      await this._doExecution(cell, notebook);
     }
   }
 
-  private async _doExecution(cell: vscode.NotebookCell): Promise<void> {
+  private async _doExecution(cell: vscode.NotebookCell, notebook: vscode.NotebookDocument): Promise<void> {
     const execution = this._controller.createNotebookCellExecution(cell);
     execution.executionOrder = ++this._executionOrder;
     execution.start(Date.now()); // Keep track of elapsed time to execute cell.
 
     const instance = instances.get(cell.notebook)!;
 
-    const result = await instance.run(cell.document.getText());
-
-    if (result.type === 'result') {
-      let data = result.data.slice(1)
-
-      if (data.length === 1) data = data[0]
+    try {
+      const result = await instance.run(cell.document.getText());
+      if (result.type === 'result') {
+        let data = result.data.slice(1)
+  
+        if (data.length === 1) data = data[0]
+  
+        execution.replaceOutput([
+          new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.json(data)
+          ])
+        ])
+      }
+  
+      if (result.type === 'error') {
+        execution.replaceOutput([
+          new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.error(result.err)
+          ])
+        ])
+      }
+    } catch (ex: any) {
+      vscode.window.showErrorMessage('This was a big error! The DB was reset!')
 
       execution.replaceOutput([
         new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.json(data)
+          vscode.NotebookCellOutputItem.error(ex)
         ])
       ])
+
+      instances.set(notebook, new Instance())
     }
 
-    if (result.type === 'error') {
-      execution.replaceOutput([
-        new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.error(result.err)
-        ])
-      ])
-    }
-
+   
 
     execution.end(true, Date.now());
   }
@@ -147,9 +160,21 @@ class Instance {
     }
     this._worker = new Worker(join(__dirname, './worker'));
     this._api = wrap(nodeEndpoint(this._worker));
+    this._worker.on('error', (err) =>  this.currentReject(err))
+    this._worker.on('online', console.log)
+    this._worker.on('exit', console.log)
+    this._worker.on('message', console.log)
+    // this._worker.on('messageerror', console.log)
+
   }
 
-  async run(sql: string): Promise<any> {
-    return this._api.runSql(sql)
+  currentReject: (err: any) => void = () => {}
+
+  run(sql: string): Promise<any> {
+    return new Promise(async (res, rej) => {
+      this.currentReject = rej
+      const r = await this._api.runSql(sql)
+      res(r)
+    })
   }
 }
