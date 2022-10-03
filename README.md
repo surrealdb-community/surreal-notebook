@@ -21,7 +21,9 @@ In default configuration you use the included wasm build as the db. You can chan
 
 In default configuration for each notebook a new instance is created you can change that by setting `surreal.notebook.shared` to `true` that it will use 1 instance for the complete workspace.
 
-## Contributors
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore-start -->
@@ -29,7 +31,7 @@ In default configuration for each notebook a new instance is created you can cha
 <table>
   <tbody>
     <tr>
-      <td align="center"><a href="http://ec-nordbund.de"><img src="https://avatars.githubusercontent.com/u/24830662?v=4?s=100" width="100px;" alt="Sebastian Krüger"/><br /><sub><b>Sebastian Krüger</b></sub></a><br /><a href="https://github.com/surrealdb-community/surreal-notebook/commits?author=mathe42" title="Code">💻</a> <a href="#maintenance-mathe42" title="Maintenance">🚧</a></td>
+      <td align="center"><a href="http://ec-nordbund.de"><img src="https://avatars.githubusercontent.com/u/24830662?v=4?s=100" width="100px;" alt="Sebastian Krüger"/><br /><sub><b>Sebastian Krüger</b></sub></a><br /><a href="https://github.com/surrealdb-community/surrealdb.worker/commits?author=mathe42" title="Code">💻</a> <a href="#maintenance-mathe42" title="Maintenance">🚧</a></td>
     </tr>
   </tbody>
   <tfoot>
@@ -41,10 +43,5 @@ In default configuration for each notebook a new instance is created you can cha
 <!-- prettier-ignore-end -->
 
 <!-- ALL-CONTRIBUTORS-LIST:END -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
 
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
