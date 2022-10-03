@@ -12,6 +12,8 @@ let execPath = c.get('exec')
 let wasm = c.get('use-wasm')
 let shared = c.get('shared-instance')
 
+let instances = new WeakMap<vscode.NotebookDocument, Instance>();
+let sharedInstance: Instance
 
 export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
@@ -21,8 +23,10 @@ export function activate(context: vscode.ExtensionContext) {
 
   vscode.workspace.onDidChangeConfiguration((e) => {
     if(e.affectsConfiguration('surreal.notebook')) {
-      // TODO: restart instances!
-      vscode.window.showInformationMessage('Config changed - you might have to restart vscode!')
+      instances = new WeakMap()
+      sharedInstance = undefined as any
+
+      vscode.window.showInformationMessage('Config changed - all DB instances killed!')
     }
   })
 }
@@ -73,8 +77,7 @@ class SQLSerializer implements vscode.NotebookSerializer {
   }
 }
 
-let instances = new WeakMap<vscode.NotebookDocument, Instance>();
-let sharedInstance: Instance
+
 
 class SQLController {
   readonly controllerId = 'surreal.nb.controller';
