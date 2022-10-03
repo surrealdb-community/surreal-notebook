@@ -21,11 +21,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mathe42/suurreal-notebook"
+    "url": "https://github.com/mathe42/surreal-notebook"
   },
-  "homepage": "https://github.com/mathe42/suurreal-notebook#readme",
+  "homepage": "https://github.com/mathe42/surreal-notebook#readme",
   "bugs": {
-    "url": "https://github.com/mathe42/suurreal-notebook/issues"
+    "url": "https://github.com/mathe42/surreal-notebook/issues"
   },
   "main": "./out/extension.js",
   "contributes": {
@@ -40,7 +40,30 @@
           }
         ]
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Surrealdb-Notebooks",
+      "properties": {
+        "surreal.notebook.exec": {
+          "scope": "window",
+          "type": "string",
+          "default": "surreal",
+          "description": "Path to surreal executable"
+        },
+        "surreal.notebook.use-wasm": {
+          "scope": "window",
+          "type": "boolean",
+          "default": true,
+          "description": "Use wasm build (included in extension)"
+        },
+        "surreal.notebook.shared-instance": {
+          "scope": "window",
+          "type": "boolean",
+          "default": false,
+          "description": "Share surreal instance across workspace"
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -65,6 +88,7 @@
   "dependencies": {
     "comlink": "^4.3.1",
     "mathe42.surrealdb.wasm": "^0.0.1",
+    "surrealdb.js": "^0.5.0",
     "surrealdb.wasm": "^0.1.0"
   }
 }

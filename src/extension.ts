@@ -4,14 +4,29 @@ import * as vscode from 'vscode';
 import { Worker } from "worker_threads";
 import { wrap, Remote } from "comlink";
 import nodeEndpoint from "./ep";
+import { ChildProcess, exec } from "child_process";
+import Surreal from "surrealdb.js";
+
+const c = vscode.workspace.getConfiguration('surreal.notebook')
+let execPath = c.get('exec')
+let wasm = c.get('use-wasm')
+let shared = c.get('shared-instance')
+
 
 export function activate(context: vscode.ExtensionContext) {
-  console.log(vscode.workspace.getConfiguration())
   context.subscriptions.push(
     vscode.workspace.registerNotebookSerializer('surreal.nb', new SQLSerializer())
   );
   context.subscriptions.push(new SQLController());
+
+  vscode.workspace.onDidChangeConfiguration((e) => {
+    if(e.affectsConfiguration('surreal.notebook')) {
+      // TODO: restart instances!
+      vscode.window.showInformationMessage('Config changed - you might have to restart vscode!')
+    }
+  })
 }
+
 
 interface RawNotebookCell {
   language: string;
@@ -59,6 +74,7 @@ class SQLSerializer implements vscode.NotebookSerializer {
 }
 
 let instances = new WeakMap<vscode.NotebookDocument, Instance>();
+let sharedInstance: Instance
 
 class SQLController {
   readonly controllerId = 'surreal.nb.controller';
@@ -86,8 +102,20 @@ class SQLController {
     notebook: vscode.NotebookDocument,
     _controller: vscode.NotebookController
   ) {
-    if (!instances.has(notebook)) {
-      instances.set(notebook, new Instance())
+    if(shared) {
+      if(!sharedInstance) {
+        if(wasm) {
+          sharedInstance = new WasmInstance()
+        } else {
+          sharedInstance = new FullInstance()
+        }  
+      }
+    } else if (!instances.has(notebook)) {
+      if(wasm) {
+        instances.set(notebook, new WasmInstance())
+      } else {
+        instances.set(notebook, new FullInstance())
+      }
     }
 
     for (let cell of cells) {
@@ -100,10 +128,19 @@ class SQLController {
     execution.executionOrder = ++this._executionOrder;
     execution.start(Date.now()); // Keep track of elapsed time to execute cell.
 
-    const instance = instances.get(cell.notebook)!;
+    const instance = shared ? sharedInstance : instances.get(cell.notebook)!;
 
     try {
       const result = await instance.run(cell.document.getText());
+
+      if(!wasm) {
+        execution.replaceOutput([
+          new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.json(result)
+          ])
+        ])
+      }
+
       if (result.type === 'result') {
         let data = result.data.slice(1)
   
@@ -124,18 +161,21 @@ class SQLController {
         ])
       }
     } catch (ex: any) {
-      vscode.window.showErrorMessage('This was a big error! The DB was reset!')
-
       execution.replaceOutput([
         new vscode.NotebookCellOutput([
           vscode.NotebookCellOutputItem.error(ex)
         ])
       ])
 
-      instances.set(notebook, new Instance())
+      if(wasm) {
+        vscode.window.showErrorMessage('This was a big error! The DB was reset!')
+        if(shared) {
+          sharedInstance = new WasmInstance()
+        } else {
+          instances.set(notebook, new WasmInstance())
+        }
+      }
     }
-
-   
 
     execution.end(true, Date.now());
   }
@@ -145,8 +185,11 @@ class SQLController {
   }
 }
 
+interface Instance {
+  run(sql: string): Promise<any>
+}
 
-class Instance {
+class WasmInstance implements Instance {
   private _worker!: Worker;
   private _api!: Remote<{ runSql(sql: string): any }>;
 
@@ -161,11 +204,6 @@ class Instance {
     this._worker = new Worker(join(__dirname, './worker'));
     this._api = wrap(nodeEndpoint(this._worker));
     this._worker.on('error', (err) =>  this.currentReject(err))
-    this._worker.on('online', console.log)
-    this._worker.on('exit', console.log)
-    this._worker.on('message', console.log)
-    // this._worker.on('messageerror', console.log)
-
   }
 
   currentReject: (err: any) => void = () => {}
@@ -176,5 +214,34 @@ class Instance {
       const r = await this._api.runSql(sql)
       res(r)
     })
+  }
+}
+
+
+class FullInstance implements Instance {
+  port = 8000 + Math.floor(Math.random() * 1000)
+  process!: ChildProcess
+  db!: Surreal
+  ready: Promise<void>
+
+  constructor() {
+    this.ready = this.init()
+  }
+
+  async init() {
+    this.process = exec(execPath + ' start --log trace --user root --pass root memory --bind=0.0.0.0:' + this.port)
+    this.process.addListener('close', () => {
+      this.init()
+    })
+    this.db = new Surreal('http://127.0.0.1:' + this.port + '/rpc')
+    await this.db.signin({
+      user: 'root',
+      pass: 'root'
+    })
+    await this.db.use('default', 'default')
+  }
+  async run(sql: string) {
+    await this.ready
+    return this.db.query(sql)
   }
 }
