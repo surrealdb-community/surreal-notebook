@@ -17,3 +17,14 @@ In default configuration you use the included wasm build as the db. You can chan
 > Note that you have to install it and set PATH env-var or set in `surreal.notebook. exec` a path to the executable.
 
 In default configuration for each notebook a new instance is created you can change that by setting `surreal.notebook.shared` to `true` that it will use 1 instance for the complete workspace.
+
+## Contributors
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
