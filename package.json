@@ -2,7 +2,7 @@
   "name": "surreal-notebook",
   "displayName": "surreal-notebook",
   "description": "Notebooks for SurrealQL",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "icon": "surrealdb-icon.png",
   "publisher": "mathe42",
   "engines": {
