@@ -27,6 +27,7 @@
   "bugs": {
     "url": "https://github.com/surrealdb-community/surreal-notebook/issues"
   },
+  "browser": "./out/browser.js",
   "main": "./out/extension.js",
   "contributes": {
     "notebooks": [
