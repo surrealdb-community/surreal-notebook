@@ -89,7 +89,7 @@
   "dependencies": {
     "comlink": "^4.3.1",
     "mathe42.surrealdb.wasm": "^0.0.1",
-    "surrealdb.js": "^0.5.0",
+    "surrealdb.js": "^0.11.0",
     "surrealdb.wasm": "^0.1.0"
   }
 }
